@@ -12,20 +12,14 @@ kwargs = {
   'a1':-1.199*(10**-4),
   'a2':3.350*(10**-3),
   'a3':1.109*(10**-1),
-  'Zt': 44#10.297
+  'Zt': 44, #10.297,
+  'amu':4
 }
 
-with open('data.json', 'r') as f:
+print('[LOADING DATA]')
+with open('data/data.json', 'r') as f:
   datapoints = json.load(f)
-
-# calculate datapoints
-# datapoints = []
-# for E in range(30, 3000, 50):
-#   output = stopping.calculate_stopping(E=E/1000, **kwargs)
-#   output += random.random()*2*(-1 if random.randint(0, 1)==0 else 1)
-#   datapoints.append((E,output))
-
-# print(datapoints)
+print('[DATA LOADED]')
 
 fit_results = []
 for i in range(5):
@@ -33,14 +27,20 @@ for i in range(5):
     datapoints=datapoints,
     function=stopping.calculate_stopping,
     function_kwargs=kwargs,
+    maxiter=300,
+    popsize=10
     # initial_guess = [5.142*(10**-1), 7.421*(10**-3), -1.199*(10**-4), 3.350*(10**-3), 1.109*(10**-1)]
   )
-  print(result)
+  print(f'[FITTING] fit nr {i+1}: {result.fun}')
   fit_results.append(result)
 
 optimal_fit = sorted(fit_results, key=lambda fit:fit.fun)[0]
-print()
-print(optimal_fit)
+print(f'[FITTING DONE] Took optimal fit: {optimal_fit.fun}')
+
+with open('data/output.json', 'w+') as f:
+  json.dump(list(optimal_fit.x), f)
+print('[DONE] saved fit results to output.json')
+
 # plot
 kwargs.update({
   's':optimal_fit.x[0],
